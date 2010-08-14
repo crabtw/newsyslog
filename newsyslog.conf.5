@@ -307,6 +307,9 @@ indicates that
 should attempt to save disk space by compressing the rotated
 log file using
 .Xr gzip 1 .
+.It Cm S
+indicates that logs are not rotated based on
+actual size on disk (number of blocks used).
 .It Fl
 a minus sign will not cause any special processing, but it
 can be used as a placeholder to create a
