@@ -106,7 +106,7 @@ __FBSDID("$FreeBSD$");
 				/*    process when trimming this file. */
 #define	CE_CREATE	0x0100	/* Create the log file if it does not exist. */
 #define	CE_NODUMP	0x0200	/* Set 'nodump' on newly created log file. */
-#define	CE_ACTUALSIZE	0x0400	/* Use actual file size */
+#define	CE_USERSIZE	0x0400	/* Use the file size that user sees */
 
 #define	MIN_PID         5	/* Don't touch pids lower than this */
 #define	MAX_PID		99999	/* was lower, see /usr/include/sys/proc.h */
@@ -457,7 +457,7 @@ do_entry(struct conf_entry * ent)
 		else
 			printf("%s <%d>: ", ent->log, ent->numlogs);
 	}
-	ent->fsize = sizefile(ent->log, ent->flags & CE_ACTUALSIZE);
+	ent->fsize = sizefile(ent->log, ent->flags & CE_USERSIZE);
 	modtime = age_old_log(ent->log);
 	ent->rotate = 0;
 	ent->firstcreate = 0;
@@ -1996,7 +1996,7 @@ save_zipwork(const struct conf_entry *ent, const struct sigwork_entry *swork,
 
 	/* Compute the size if the caller did not know it. */
 	if (zsize < 0)
-		zsize = sizefile(zipfname, 0);
+		zsize = sizefile(zipfname, ent->flags & CE_USERSIZE);
 
 	zprev = NULL;
 	ndiff = 1;
@@ -2131,14 +2131,14 @@ log_trim(const char *logname, const struct conf_entry *log_ent)
 
 /* Return size in kilobytes of a file */
 static int
-sizefile(const char *file, int actual_size)
+sizefile(const char *file, int user_size)
 {
 	struct stat sb;
 
 	if (stat(file, &sb) < 0)
 		return (-1);
 
-	if (actual_size)
+	if (user_size)
 		return (kbytes(sb.st_size));
 	else
 		return (kbytes(dbtob(sb.st_blocks)));
